@@ -8,6 +8,8 @@ authors = ["Jinyamyzk <63580543+Jinyamyzk@users.noreply.github.com>"]
 python = "^3.9"
 dezero = "^0.0.13"
 numpy = "^1.22.4"
+matplotlib = "^3.5.2"
+torch = "^1.11.0"
 
 [tool.poetry.dev-dependencies]
 
