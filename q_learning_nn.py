@@ -1,17 +1,17 @@
 import numpy as np
-from dezero import Model
-from dezero import optimizers
-import dezero.functions as F
-import dezero.layers as L
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
 
-class QNet(Model):
+class QNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.l1 = L.Linear(100) # 中間層のサイズ
-        self.l2 = L.Linear(6) # 行動のサイズ(カードの種類数)
+        self.l1 = nn.Linear(15, 100) # 状態のサイズ x 中間層のサイズ
+        self.l2 = nn.Linear(100, 6) # 行動のサイズ(カードの種類数)
     
     def forward(self, x):
-        x = F.relu(self.l1)
+        x = F.relu(self.l1(x))
         x = self.l2(x)
         return x
 
@@ -21,18 +21,21 @@ class QLearningAgent:
         self.gamma = 0.9
         self.lr = 0.01
         self.epsilon = 0.1
-        self.action_size = 4
+        self.action_size = 6
 
         self.qnet = QNet()
-        self.optimizer = optimizers.SGD(self.lr)
-        self.optimizer.setup(self.qnet)
+        self.optimizer = optim.Adam(self.qnet.parameters(), lr=self.lr)
 
-    def get_action(self, state_vec):
+    def get_action(self, state, hand):
         if np.random.rand() < self.epsilon:
-            return np.random.choice(self.action_size)
+            return np.random.choice(hand)
         else:
-            qs = self.qnet(state_vec)
-            return qs.data.argmax()
+            state = torch.tensor(state[np.newaxis, :], dtype=torch.float32)
+            qs = self.qnet(state)
+            mask = np.array([True if i not in hand else False for i in range(self.action_size)]) # 手札にないカードを-infにする
+            mask = torch.tensor(mask[np.newaxis, :])
+            qs[mask] = -float('inf')
+            return qs.argmax().item()
 
     def update(self, state, action, reward, next_state, done):
         if done:
