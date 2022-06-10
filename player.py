@@ -1,6 +1,6 @@
 import random
 from q_learning_nn import QLearningAgent
-from util.remove_one_from_redundant_list import remove_one
+from util.remove_one_from_redundant_list import remove_just_one
 class Player():
     def __init__(self):
         self.INITIAL_HP = 40
@@ -43,12 +43,12 @@ class QLearningPlayer(Player):
         if self.isattackable() == False:
             return -1
         played_card = self.agent.get_action(state, self.hand["attack"])
-        self.hand["attack"] = remove_one(self.hand["attack"], played_card)
+        self.hand["attack"] = remove_just_one(self.hand["attack"], played_card)
         return played_card
     
     def defence(self, state):
         if self.isdefencable() == False:
             return -1
         played_card = self.agent.get_action(state, self.hand["defence"])
-        self.hand["defence"] = remove_one(self.hand["defence"], played_card)
+        self.hand["defence"] = remove_just_one(self.hand["defence"], played_card)
         return played_card
