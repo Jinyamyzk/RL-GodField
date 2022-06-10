@@ -109,12 +109,12 @@ class Game:
                 if played_defence_card != -1:
                     card = self.cards.draw()
                     self.players[self.defence_player].draw_card(card, self.cards.deck[card].type)
-            self.show_field(action, played_defence_card, damage)
+            # self.show_field(action, played_defence_card, damage)
         else:
             # passすればカードを配る
             card = self.cards.draw()
             self.players[self.attack_player].draw_card(card, self.cards.deck[card].type)
-            self.show_field(-1, -1, 0)
+            # self.show_field(-1, -1, 0)
         self.change_turn()
 
         # comのアタック
@@ -134,7 +134,7 @@ class Game:
         attack_flg = 1
         damage = self.cal_damage(self.com_played_attack_card, action)
         self.players[self.defence_player].hp -= damage
-        self.show_field(self.com_played_attack_card, action, damage)
+        # self.show_field(self.com_played_attack_card, action, damage)
         if self.players[self.defence_player].hp <= 0:
             self.done = True
             reward = -1

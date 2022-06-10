@@ -38,20 +38,24 @@ class QLearningAgent:
             return qs.argmax().item()
 
     def update(self, state, action, reward, next_state, done):
+        state = torch.tensor(state[np.newaxis, :], dtype=torch.float32)
+        next_state = torch.tensor(next_state[np.newaxis, :], dtype=torch.float32)
         if done:
             next_q = np.zeros(1)  # [0.]
         else:
             next_qs = self.qnet(next_state)
-            next_q = next_qs.max(axis=1)
-            next_q.unchain()
+            next_q = next_qs.max(1)[0]
+            next_q.detach()
 
-        target = self.gamma * next_q + reward
+        target = torch.tensor(self.gamma * next_q + reward, dtype=torch.float32)
         qs = self.qnet(state)
         q = qs[:, action]
-        loss = F.mean_squared_error(target, q)
 
-        self.qnet.cleargrads()
+        loss_fn = nn.MSELoss()
+        loss = loss_fn(q, target)
+
+        self.optimizer.zero_grad()
         loss.backward()
-        self.optimizer.update()
+        self.optimizer.step()
 
         return loss.data
