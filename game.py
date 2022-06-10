@@ -1,5 +1,7 @@
 from cards import Cards
 from field import Field
+import numpy as np
+from typing import Literal
 
 
 class Game:
@@ -32,7 +34,7 @@ class Game:
         attack_value = self.cards.deck[played_attack_card].use()
         defence_value = self.cards.deck[played_defence_card].use() if played_defence_card != -1 else 0
         damage = attack_value - defence_value
-        damage = damage if damage > 0 else 0
+        damage = damage if damage > 0 else 0 # デフェンスが超過した場合0にする
         return damage
     
     def show_field(self, played_attack_card: int, played_defence_card: int, damage: int):
@@ -55,9 +57,7 @@ class Game:
 
     def play(self):
         while self.done != True:
-            # print(f"hand: {self.players[self.attack_player].hand}")
             played_attack_card = self.players[self.attack_player].myturn()
-            # print(played_attack_card)
             if played_attack_card != -1:
                 played_defence_card = self.players[self.defence_player].defence()
                 damage = self.cal_damage(played_attack_card, played_defence_card)
@@ -80,6 +80,78 @@ class Game:
                 self.players[self.attack_player].draw_card(card, self.cards.deck[card].type)
                 self.show_field(-1, -1, 0)
             self.change_turn()
-            
-            
+    
+    def step(self, attack_flg:Literal[0,1], action:int)->tuple[list[int], Literal[-1,0,1], bool]:
+        if attack_flg == 1:
+            next_state, reward =  self.p1_attack(action)
+        else:
+            next_state, reward = self.p1_defence(action)
+        return next_state, reward, self.done
+
+    def p1_attack(self, action:int) -> tuple[list[int], Literal[1, 0]]:
+        reward = 0
+        played_card = []
+        attack_flg = 0
+        if action != -1:
+            played_defence_card = self.players[self.defence_player].defence()
+            damage = self.cal_damage(action, played_defence_card)
+            self.players[self.defence_player].hp -= damage
+            played_card.extend([action, played_defence_card])
+            if self.players[self.defence_player].hp <= 0:
+                self.done = True
+                reward = 1
+                self.win(self.attack_player)
+            else:
+                # カードを使ったプレイヤーにカードを配る
+                card = self.cards.draw()
+                self.players[self.attack_player].draw_card(card, self.cards.deck[card].type)
+                if played_defence_card != -1:
+                    card = self.cards.draw()
+                    self.players[self.defence_player].draw_card(card, self.cards.deck[card].type)
+            self.show_field(action, played_defence_card, damage)
+        else:
+            # passすればカードを配る
+            card = self.cards.draw()
+            self.players[self.attack_player].draw_card(card, self.cards.deck[card].type)
+            self.show_field(-1, -1, 0)
+        self.change_turn()
+
+        # comのアタック
+        com_played_attack_card = self.players[self.attack_player].myturn()
+        if com_played_attack_card != -1:
+            played_card.append(com_played_attack_card)
+        else: #comがパス
+            self.change_turn()
+            attack_flg = 1 # もう一回アタック
+
+        next_state = self.state2vec(self.players["p1"].hand, self.players["p1"].hp, self.players["p2"].hp, played_card, attack_flg)
+        return next_state, reward 
+    
+    def p1_defence(self, action:int, com_played_attack_card:int) -> tuple[list[int], Literal[-1, 0]]:
+        reward = 0
+        played_card = []
+        attack_flg = 1
+        damage = self.cal_damage(com_played_attack_card, action)
+        self.players[self.defence_player].hp -= damage
+        if self.players[self.defence_player].hp <= 0:
+            self.done = True
+            reward = -1
+            self.win(self.attack_player)
+        else:
+            self.change_turn()
+        next_state = self.state2vec(self.players["p1"].hand, self.players["p1"].hp, self.players["p2"].hp, played_card, attack_flg)
+        return next_state, reward
+
+    def state2vec(self, hand:dict[str: list[int]], myHP:int, enemyHP:int, played_card:list[int], attack_flg:int) -> list[int]:
+        hand_vec = np.zeros(self.cards.num_cards, dtype=int)
+        for cards in hand.values():
+            for card in cards:
+                hand_vec[card] += 1
+        played_card_vec = np.zeros(self.cards.num_cards, dtype=int)
+        for card in played_card:
+            played_card_vec[card] += 1
+        state_vec = np.array([attack_flg, myHP, enemyHP])
+        state_vec = np.append(state_vec, hand_vec)
+        state_vec = np.append(state_vec, played_card_vec)
+        return list(state_vec)
 

@@ -4,6 +4,7 @@ from defenceCard import DefenceCard
 
 class Cards():
     def __init__(self):
+        self.num_cards = 6
         self.deck = {}
         self.deck[0] = AttackCard(1)
         self.deck[1] = AttackCard(5)
@@ -13,8 +14,8 @@ class Cards():
         self.deck[5] = DefenceCard(10)
         
         self.deck_probs = {}
-        for i in range(6):
-            self.deck_probs[i] = 1/6
+        for i in range(self.num_cards):
+            self.deck_probs[i] = 1/self.num_cards
     
     def __len__(self):
         return len(self.deck)
