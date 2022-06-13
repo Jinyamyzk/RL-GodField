@@ -31,11 +31,17 @@ class Game:
             self.attack_player = "p1"
             self.defence_player = "p2"
 
+    # ダメージ計算, HP反映
     def cal_damage(self, played_attack_card: int, played_defence_card: int = -1) -> int:
         attack_value = self.cards.deck[played_attack_card].use()
         defence_value = self.cards.deck[played_defence_card].use() if played_defence_card != -1 else 0
         damage = attack_value - defence_value
         damage = damage if damage > 0 else 0 # デフェンスが超過した場合0にする
+        if played_attack_card == 6 and damage > 0:
+            damage = self.players[self.defence_player].hp
+            self.players[self.defence_player].hp = 0
+        else:
+            self.players[self.defence_player].hp -= damage
         return damage
     
     def show_field(self, played_attack_card: int, played_defence_card: int, damage: int):
@@ -54,32 +60,6 @@ class Game:
     
     def win(self, player: str):
         print(f"***** {player} Win!! *****")
-
-    def play(self):
-        while self.done != True:
-            played_attack_card = self.players[self.attack_player].myturn()
-            if played_attack_card != -1:
-                played_defence_card = self.players[self.defence_player].defence()
-                damage = self.cal_damage(played_attack_card, played_defence_card)
-                self.players[self.defence_player].hp -= damage
-                if self.players[self.defence_player].hp <= 0:
-                    self.done = True
-                    # self.win(self.attack_player)
-                    continue
-                else:
-                    # カードを使ったプレイヤーにカードを配る
-                    card = self.cards.draw()
-                    self.players[self.attack_player].draw_card(card, self.cards.deck[card].type)
-                    if played_defence_card != -1:
-                        card = self.cards.draw()
-                        self.players[self.defence_player].draw_card(card, self.cards.deck[card].type)
-                # self.show_field(played_attack_card, played_defence_card, damage)
-            else:
-                # passすればカードを配る
-                card = self.cards.draw()
-                self.players[self.attack_player].draw_card(card, self.cards.deck[card].type)
-                # self.show_field(-1, -1, 0)
-            self.change_turn()
     
     def step(self, action:int)->tuple[list[int], Literal[-1,0,1], bool]:
         if self.attack_player == "p1":
@@ -96,7 +76,6 @@ class Game:
         if action != -1:
             played_defence_card = self.players[self.defence_player].defence()
             damage = self.cal_damage(action, played_defence_card)
-            self.players[self.defence_player].hp -= damage
             played_card.extend([action, played_defence_card])
             if self.players[self.defence_player].hp <= 0:
                 self.done = True
@@ -133,7 +112,7 @@ class Game:
         played_card = []
         attack_flg = 1
         damage = self.cal_damage(self.com_played_attack_card, action)
-        self.players[self.defence_player].hp -= damage
+        
         # self.show_field(self.com_played_attack_card, action, damage)
         # カードを配る
         card = self.cards.draw()

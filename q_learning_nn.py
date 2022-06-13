@@ -7,8 +7,8 @@ import torch.optim as optim
 class QNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.l1 = nn.Linear(15, 100) # 状態のサイズ x 中間層のサイズ
-        self.l2 = nn.Linear(100, 6) # 行動のサイズ(カードの種類数)
+        self.l1 = nn.Linear(17, 100) # 状態のサイズ x 中間層のサイズ
+        self.l2 = nn.Linear(100, 7) # 行動のサイズ(カードの種類数)
     
     def forward(self, x):
         x = F.relu(self.l1(x))
@@ -21,7 +21,7 @@ class QLearningAgent:
         self.gamma = 0.9
         self.lr = 0.01
         self.epsilon = 0.1
-        self.action_size = 6
+        self.action_size = 7
 
         self.qnet = QNet()
         self.optimizer = optim.Adam(self.qnet.parameters(), lr=self.lr)
