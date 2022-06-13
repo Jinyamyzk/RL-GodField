@@ -1,6 +1,6 @@
 from numpy import average
 from game import Game
-from player import QLearningPlayer, RandomPlayer
+from player import HumanPlayer, QLearningPlayer, RandomPlayer
 import matplotlib.pyplot as plt
 
 
@@ -17,15 +17,17 @@ def run():
 def q_learning():
     player1 = QLearningPlayer()
     player2 = RandomPlayer()
+    # player2 = HumanPlayer()
     players = {"p1": player1, "p2": player2}
     game = Game(players)
 
-    episodes = 100
+    episodes = 10000
     loss_history = []
     reward_history = []
+    total_reward = 0
     for episode in range(episodes):
         state = game.reset()
-        total_loss, total_reward, cnt = 0, 0, 0
+        total_loss, cnt = 0, 0
         done = False
 
         while not done:
@@ -41,13 +43,19 @@ def q_learning():
             cnt += 1
             state = next_state
         total_reward += reward
-        if episode % 10 == 0:
-            reward_history.append(total_reward / 10)
+        
+        if episode % 100 == 0:
+            reward_history.append(total_reward)
+            print(total_reward)
             total_reward = 0
+
+        
+        
         average_loss = total_loss / cnt
         loss_history.append(average_loss)
-    plt.plot(reward_history)
+    plt.plot(loss_history)
     plt.show()
+    print(reward_history)
 
         
 

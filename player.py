@@ -3,7 +3,7 @@ from q_learning_nn import QLearningAgent
 from util.remove_one_from_redundant_list import remove_just_one
 class Player():
     def __init__(self):
-        self.INITIAL_HP = 40
+        self.INITIAL_HP = 10
         self.hp = self.INITIAL_HP
         self.hand = {"attack":[], "defence":[]}
     
@@ -50,5 +50,29 @@ class QLearningPlayer(Player):
         if self.isdefencable() == False:
             return -1
         played_card = self.agent.get_action(state, self.hand["defence"])
+        self.hand["defence"] = remove_just_one(self.hand["defence"], played_card)
+        return played_card
+
+class HumanPlayer(Player):
+    def __init__(self):
+        super().__init__()
+    
+    def myturn(self):
+        print("hand: ", self.hand["attack"])
+        if self.isattackable() == False:
+            return -1
+        played_card = -1
+        while played_card not in self.hand["attack"]:
+            played_card = int(input("choose attack card: "))
+        self.hand["attack"] = remove_just_one(self.hand["attack"], played_card)
+        return played_card
+    
+    def defence(self) -> int:
+        print("hand: ", self.hand["defence"])
+        if self.isdefencable() == False:
+            return -1
+        played_card = -1
+        while played_card not in self.hand["defence"]:
+            played_card = int(input("choose defence card: "))
         self.hand["defence"] = remove_just_one(self.hand["defence"], played_card)
         return played_card

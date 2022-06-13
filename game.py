@@ -64,7 +64,7 @@ class Game:
                 self.players[self.defence_player].hp -= damage
                 if self.players[self.defence_player].hp <= 0:
                     self.done = True
-                    self.win(self.attack_player)
+                    # self.win(self.attack_player)
                     continue
                 else:
                     # カードを使ったプレイヤーにカードを配る
@@ -73,12 +73,12 @@ class Game:
                     if played_defence_card != -1:
                         card = self.cards.draw()
                         self.players[self.defence_player].draw_card(card, self.cards.deck[card].type)
-                self.show_field(played_attack_card, played_defence_card, damage)
+                # self.show_field(played_attack_card, played_defence_card, damage)
             else:
                 # passすればカードを配る
                 card = self.cards.draw()
                 self.players[self.attack_player].draw_card(card, self.cards.deck[card].type)
-                self.show_field(-1, -1, 0)
+                # self.show_field(-1, -1, 0)
             self.change_turn()
     
     def step(self, action:int)->tuple[list[int], Literal[-1,0,1], bool]:
@@ -101,7 +101,7 @@ class Game:
             if self.players[self.defence_player].hp <= 0:
                 self.done = True
                 reward = 1
-                self.win(self.attack_player)
+                # self.win(self.attack_player)
             else:
                 # カードを使ったプレイヤーにカードを配る
                 card = self.cards.draw()
@@ -135,10 +135,16 @@ class Game:
         damage = self.cal_damage(self.com_played_attack_card, action)
         self.players[self.defence_player].hp -= damage
         # self.show_field(self.com_played_attack_card, action, damage)
+        # カードを配る
+        card = self.cards.draw()
+        self.players[self.attack_player].draw_card(card, self.cards.deck[card].type)
+        if action != -1:
+            card = self.cards.draw()
+            self.players[self.defence_player].draw_card(card, self.cards.deck[card].type)
         if self.players[self.defence_player].hp <= 0:
             self.done = True
             reward = -1
-            self.win(self.attack_player)
+            # self.win(self.attack_player)
         else:
             self.change_turn()
         next_state = self.state2vec(self.players["p1"].hand, self.players["p1"].hp, self.players["p2"].hp, played_card, attack_flg)
