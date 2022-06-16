@@ -15,7 +15,7 @@ def run():
     print(next_state)
 
 def q_learning():
-    player1 = QLearningPlayer()
+    player1 = QLearningPlayer(21)
     player2 = RandomPlayer()
     # player2 = HumanPlayer()
     players = {"p1": player1, "p2": player2}
@@ -24,7 +24,7 @@ def q_learning():
     episodes = 10000
     loss_history = []
     reward_history = []
-    total_reward = 0
+    win_rate = 0
     for episode in range(episodes):
         state = game.reset()
         total_loss, cnt = 0, 0
@@ -42,12 +42,13 @@ def q_learning():
             total_loss += loss
             cnt += 1
             state = next_state
-        total_reward += reward
+        win_rate += 1 if reward == 1 else 0
         
         if episode % 100 == 0:
-            reward_history.append(total_reward)
-            print(total_reward)
-            total_reward = 0
+            win_rate = win_rate/100
+            reward_history.append(win_rate)
+            print(win_rate)
+            win_rate = 0
 
         
         

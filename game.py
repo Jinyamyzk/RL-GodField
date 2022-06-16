@@ -37,7 +37,7 @@ class Game:
         defence_value = self.cards.deck[played_defence_card].use() if played_defence_card != -1 else 0
         damage = attack_value - defence_value
         damage = damage if damage > 0 else 0 # デフェンスが超過した場合0にする
-        if played_attack_card == 6 and damage > 0:
+        if self.cards.deck[played_attack_card].element=="darkness" and damage > 0: # Darknessのダメージを受けた場合負け
             damage = self.players[self.defence_player].hp
             self.players[self.defence_player].hp = 0
         else:

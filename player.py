@@ -35,9 +35,9 @@ class RandomPlayer(Player):
         return played_card
 
 class QLearningPlayer(Player):
-    def __init__(self):
+    def __init__(self, action_size):
         super().__init__()
-        self.agent = QLearningAgent()
+        self.agent = QLearningAgent(action_size)
 
     def myturn(self, state) -> int:
         if self.isattackable() == False:
